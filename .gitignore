@@ -1,0 +1,14 @@
+# Keep learner-specific planning context out of commits by default.
+/devpost/learner-profile.md
+
+# Local credentials; .env.example may contain placeholders only.
+.env
+.env.*
+!.env.example
+
+# Dependencies and generated build output.
+node_modules/
+.next/
+out/
+dist/
+build/

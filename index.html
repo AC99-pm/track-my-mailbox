@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7f8">
+    <title>Track My Mailbox — simulated arrival demo</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <main class="page-shell" data-tmm-app>
+      <header class="page-header">
+        <p class="eyebrow">Track My Mailbox</p>
+        <h1>Know when a test arrival is recorded</h1>
+        <p class="purpose">This demo shows recipient awareness for a simulated mail arrival. It does not detect physical mail.</p>
+      </header>
+
+      <section class="identity" aria-label="Demo identity">
+        <span class="identity-mark" aria-hidden="true">T</span>
+        <div>
+          <p class="identity-label">Current demo recipient</p>
+          <p class="identity-name">Test-only demo recipient</p>
+        </div>
+        <span class="test-badge">TEST ONLY</span>
+      </section>
+
+      <section class="arrivals" aria-labelledby="arrivals-heading">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Your session</p>
+            <h2 id="arrivals-heading">Recent arrivals</h2>
+          </div>
+          <span class="session-note">Simulated activity</span>
+        </div>
+        <ul class="arrival-list" data-arrivals aria-live="polite">
+          <li class="empty-state" data-empty>No simulated arrivals yet</li>
+        </ul>
+      </section>
+
+      <div class="action-area">
+        <button class="primary-action" type="button" data-simulate>
+          <span class="button-icon" aria-hidden="true">＋</span>
+          <span>Simulate Test Arrival</span>
+        </button>
+        <p class="action-note">This adds a clearly labeled test event to this open session.</p>
+      </div>
+
+      <p class="status" data-status role="status" aria-live="polite"></p>
+      <p class="boundary-note">Test data only · No mailbox monitoring or real mail detection</p>
+    </main>
+  </body>
+</html>

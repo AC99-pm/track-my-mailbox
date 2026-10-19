@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Track My Mailbox — App Map</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #203342;
+      --muted: #596b78;
+      --paper: #f5f7f8;
+      --surface: #fff;
+      --line: #d8e1e7;
+      --blue: #315f80;
+      --blue-pale: #edf4f8;
+      --green: #2e6b50;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 16px/1.6 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(880px, calc(100% - 2rem)); margin: 0 auto; padding: 2.5rem 0 4rem; }
+    header { margin-bottom: 1.5rem; }
+    .eyebrow { margin: 0 0 .35rem; color: var(--blue); font-size: .76rem; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+    h1, h2, h3 { line-height: 1.25; }
+    h1 { margin: 0; font-size: clamp(1.8rem, 4vw, 2.4rem); }
+    h2 { margin: 0 0 .8rem; font-size: 1.25rem; }
+    h3 { margin: 0 0 .35rem; font-size: 1rem; }
+    p { margin: .4rem 0 .8rem; }
+    .lead { max-width: 68ch; color: var(--muted); font-size: 1.05rem; }
+    .notice { padding: .85rem 1rem; border-left: 4px solid var(--blue); border-radius: .35rem; background: var(--blue-pale); }
+    section { margin-top: 1.25rem; padding: 1.2rem; border: 1px solid var(--line); border-radius: .8rem; background: var(--surface); }
+    .flow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .7rem; align-items: stretch; }
+    .step { position: relative; padding: .9rem; border: 1px solid var(--line); border-radius: .6rem; background: #fbfcfd; }
+    .step:not(:last-child)::after { position: absolute; top: 50%; right: -.65rem; z-index: 1; content: "→"; color: var(--blue); font-weight: 800; }
+    .step p { margin-bottom: 0; color: var(--muted); font-size: .92rem; }
+    .route { display: grid; gap: .8rem; counter-reset: stop; }
+    .stop { padding-left: 2.6rem; position: relative; }
+    .stop::before { counter-increment: stop; content: counter(stop); position: absolute; left: 0; top: 0; display: grid; width: 1.8rem; height: 1.8rem; place-items: center; border-radius: 50%; background: var(--blue-pale); color: var(--blue); font-weight: 750; }
+    code, kbd { padding: .08rem .3rem; border-radius: .25rem; background: #eef2f4; color: #263b49; font: .92em ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+    a { color: #174f75; text-underline-offset: .18em; }
+    a:focus-visible { outline: 3px solid #91b8d1; outline-offset: 3px; border-radius: .15rem; }
+    ul { padding-left: 1.25rem; }
+    li + li { margin-top: .35rem; }
+    .practice { border-left: 4px solid var(--green); }
+    .small { color: var(--muted); font-size: .9rem; }
+    @media (max-width: 620px) {
+      main { width: min(100% - 1.2rem, 880px); padding-top: 1.4rem; }
+      section { padding: 1rem; }
+      .flow { grid-template-columns: 1fr; }
+      .step:not(:last-child)::after { top: auto; right: 50%; bottom: -.9rem; transform: translateX(50%) rotate(90deg); }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Track My Mailbox · project guide</p>
+      <h1>How this proof of concept works</h1>
+      <p class="lead">TMM demonstrates how one test-only recipient can record and see a simulated mail-arrival event. The browser keeps events in memory for the open session.</p>
+      <p class="notice"><strong>Boundary:</strong> This working demo does not detect physical mail, monitor a mailbox, send real email, or provide production authentication or multi-user security.</p>
+    </header>
+
+    <section aria-labelledby="flow-title">
+      <h2 id="flow-title">One action, one visible result</h2>
+      <div class="flow" role="img" aria-label="The recipient clicks Simulate Test Arrival; browser JavaScript asks the in-memory store to accept a labeled, timestamped event; after acceptance, the recent-arrivals list and success status update.">
+        <div class="step"><h3>1. Recipient acts</h3><p><code>index.html</code> exposes the test-only identity and Simulate Test Arrival button.</p></div>
+        <div class="step"><h3>2. Browser records</h3><p><code>app.js</code> creates a timestamped test event and asks the in-memory store to accept it.</p></div>
+        <div class="step"><h3>3. UI confirms</h3><p>After acceptance, the app shows the labeled arrival and success status; a failed write shows a retryable error.</p></div>
+      </div>
+      <p class="small">The store-before-display order means the app does not present a successful arrival before the store accepts it. Refreshing the page starts an empty session.</p>
+    </section>
+
+    <section aria-labelledby="route-title">
+      <h2 id="route-title">Reference route through the source</h2>
+      <p class="small">Use these three stops to follow the behavior in the current working tree; this route is a reference and is not a claim that it was toured.</p>
+      <div class="route">
+        <div class="stop"><h3>Entry point — <a href="../index.html"><code>index.html</code></a></h3><p>Find <code>data-simulate</code>, <code>data-arrivals</code>, and <code>data-status</code>. These anchors connect the button, list, and accessible status region to JavaScript.</p></div>
+        <div class="stop"><h3>Workflow — <code>app.js</code>, <code>mount</code> and <code>recordArrival</code></h3><p><code>mount</code> wires the button to the flow. <code>recordArrival</code> sets the duplicate guard and progress state, waits for the two-frame rendering opportunity, calls the store, then handles acceptance or failure. Successful results also respect the 400 ms minimum busy duration.</p></div>
+        <div class="stop"><h3>Storage and result — <code>app.js</code>, <code>createInMemoryStore</code> and <code>renderArrivals</code></h3><p>The store keeps events in a session-local array. After acceptance, <code>renderArrivals</code> displays the timestamp and <code>TEST · SIMULATED</code> label; the status region confirms success.</p></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="changes-title">
+      <h2 id="changes-title">To change this, start here</h2>
+      <ul>
+        <li>Purpose, identity, empty state, or action wording: <code>index.html</code>.</li>
+        <li>Recording, progress, failure, retry, or success ordering: <code>app.js</code> → <code>recordArrival</code>.</li>
+        <li>Arrival row contents and labels: <code>app.js</code> → <code>renderArrivals</code>.</li>
+        <li>Button spinner, status colors, or layout: <a href="../styles.css"><code>styles.css</code></a> → <code>.primary-action:disabled</code> and <code>.status[data-state]</code>.</li>
+        <li>Behavior evidence: <a href="../tests/test.html"><code>tests/test.html</code></a> and <code>tests/test.js</code>.</li>
+      </ul>
+    </section>
+
+    <section class="practice" aria-labelledby="practice-title">
+      <h2 id="practice-title">A practice to reuse</h2>
+      <p>Turn “show success after recording” into an observable ordering rule: keep the result hidden while a controlled store write is pending, then check that the event and success appear only after acceptance. TMM’s approved store-before-display criterion, <code>recordArrival</code>, and pending-write test show how one test can verify that boundary in another project too.</p>
+    </section>
+
+    <section aria-labelledby="run-title">
+      <h2 id="run-title">Run it locally</h2>
+      <p>From the project root on macOS, open Terminal and run <code>open index.html</code>. To open the browser test harness, run <code>open tests/test.html</code>. The pages use local files without a server or network connection.</p>
+      <p class="small">This guide describes the current working-tree snapshot and may become outdated as project files change. The app’s in-memory arrivals disappear on refresh.</p>
+    </section>
+  </main>
+</body>
+</html>
