@@ -3,11 +3,11 @@ doc: spec
 status: approved
 ---
 
-# Track My Mailbox (TMM_mvp) — Technical Spec
+# Track My Mailbox (TMM_mvp, Version 2) — Technical Spec
 
 ## How This Works, In Plain Language
 
-TMM will be a small web page made with the browser's built-in HTML, CSS, and JavaScript. There is no server, database, sign-in, package dependency, or outside service. JavaScript keeps the current session's simulated arrivals in memory, like a short-lived list held by the open page.
+Version 2 (`TMM_mvp`) is a small web page made with the browser's built-in HTML, CSS, and JavaScript. There is no server, database, sign-in, package dependency, or outside service. JavaScript keeps the current session's simulated arrivals in memory, like a short-lived list held by the open page. The discontinued Version 1 architecture is not part of this implementation.
 
 When the recipient presses **Simulate Test Arrival**, the page creates a test event for the one fixed demo-recipient ID and asks the in-memory store to accept it. The page adds the event to the visible list and shows success only after the store accepts it. If the store rejects it, the list stays as it was, the page shows a retryable error that remains until retry begins, and the action becomes available again. After success, the action also remains available for another arrival; duplicate submissions are blocked only while an attempt is active. A small browser-based test page will pass in a fake store that rejects or delays a write; that test mechanism is not shown in the product screen.
 
@@ -28,6 +28,7 @@ Implements `prd.md > The Core Journey` and `prd.md > Features and Behavior > Sin
 
 - **HTML, CSS, and browser JavaScript:** Use the browser platform directly with classic scripts (no module imports), so the app and its test page can be opened locally without a server or dependency installation. The learner approved this approach. Trade-off: it intentionally avoids framework conventions and persistence in favor of a small, transparent proof of concept.
 - **Dependencies:** None beyond a modern browser. No package manager, external library, database, backend, or network API is part of the MVP.
+- **Supporting development automation:** Python 3 may be used for local documentation or development tasks; it is not part of the browser runtime. The inspected application and test source contains no Python component.
 - **Target:** October 22, 2026 is the project target deadline, not a Build With AI Pack requirement.
 
 Reference documentation: [HTML](https://developer.mozilla.org/en-US/docs/Web/HTML), [CSS](https://developer.mozilla.org/en-US/docs/Web/CSS), and [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript).
@@ -37,7 +38,7 @@ Reference documentation: [HTML](https://developer.mozilla.org/en-US/docs/Web/HTM
 Run locally in a desktop browser on the learner's computer; deployment is not part of this architecture. No credentials, environment variables, account, or network connection are needed.
 
 - From the project root on macOS, run `open index.html` to open the demo in the default browser. The first screen should show the test-only recipient label, an empty recent-arrivals state, and **Simulate Test Arrival**.
-- Run `open tests/test.html` to open the browser-based test harness. It reports pass/fail results for the success, rejected-write, and duplicate-submission checks without adding a test control to the demo screen.
+- Run `open tests/test.html` to open the browser-based harness. **Milestone 1 — Arrival Recording** runs its automatic checks. **Milestone 2 — Failure & Retry** is an optional interactive walkthrough: the first two simulated writes are deliberately rejected, then the participant retries and uses the test-only **Simulate successful retry** control to accept the third. Both milestone names are presentation labels in the harness, not replacements for the original Slice 1 and Slice 2 build records; the harness controls are not part of the demo screen.
 - The demo and test pages use only local HTML, CSS, and classic JavaScript files. They do not fetch resources or call external services.
 - For `6-ship`, the Pack says submission requires a short demo video and a public GitHub repository. This local app can be recorded; deployment is optional and does not replace either submission item.
 
@@ -108,7 +109,7 @@ These checks cover workflow state and rendering in the local test page. A final 
 
 ## File Structure
 
-Planned project files; this spec is the only artifact being created in this phase.
+Selected Version 2 application, test, and submission-planning files. Local Learn Skill Pack installation files and the ignored personal learner profile are not part of the submission-facing application structure.
 
 ```text
 TMM_mvp/
@@ -119,7 +120,8 @@ TMM_mvp/
 │   ├── test.html              # Local test-harness page, separate from product UI
 │   └── test.js                # Success, rejection/retry, and duplicate-submit checks
 └── devpost/
-    ├── learner-profile.md     # Existing learner context
+    ├── app-map.html           # Offline guide to the current Version 2 source
+    ├── checklist.md           # Build, review, and learning record
     ├── scope.md               # Existing approved product boundary
     ├── prd.md                 # Existing approved behavior
     └── spec.md                # This technical blueprint
@@ -150,5 +152,5 @@ None. The app uses only local files and built-in browser capabilities. It has no
 - **Derived implementation detail:** Use the fixed internal ID `demo-recipient-001`; it is a stable label for the single demo identity, not a security mechanism.
 - **Derived implementation detail:** Keep the duplicate guard in the submit handler before any yield, allow one browser render opportunity via two animation-frame callbacks before starting the write, and make `record` the single acceptance boundary. Keep progress active for a minimum of 400 ms from action start without delaying the store call; render the new row and success only after that call resolves and the minimum has elapsed, whichever is later.
 - **Useful uncertainty clarified:** An in-memory write ordinarily has few natural rejection cases. The learner requested deterministic failure coverage; a fake store injected by the separate test harness can reject a write without adding a failure control to the recipient-facing screen.
-- **Open issue for build verification:** Confirm the chosen local browser can open the HTML files and run classic local scripts as expected. No dependency or external service is required; if browser restrictions interfere, resolve that within the same local-only architecture before adding tools.
+- **Local verification status (learner-reported):** The participant reports manually reviewing the current interface and both verification milestones. Browser checks were not independently rerun as part of this documentation update.
 - **Persistence decision:** Refresh persistence is unnecessary for the approved MVP and will not be implemented. This follows `scope.md > The Core Loop` and `prd.md > States and Boundaries`.

@@ -3,7 +3,13 @@ doc: scope
 status: approved
 ---
 
-# Track My Mailbox (TMM_mvp)
+# Track My Mailbox
+
+Submission candidate: Version 2 (`TMM_mvp`).
+
+## Project Evolution
+
+The participant first developed **TMM (Version 1)**, a more ambitious prototype that explored Next.js, React, Supabase, and related services. After recognizing that the Devpost Learn Skill Pack was required from the beginning of the challenge workflow, the participant discontinued Version 1 as the submission candidate and restarted as **TMM_mvp (Version 2)**. Version 2 follows the Pack's learning-oriented process and narrows the work to a browser-based simulated-arrival, confirmation, and failure-recovery proof of concept. Only Version 2 is intended for submission. This project history records the participant's choices; it does not establish official eligibility or complete Learn Skill Pack compliance.
 
 A small proof of concept for recipient-specific awareness of a simulated mail arrival in shared housing.
 
@@ -48,8 +54,8 @@ The required demo proves this workflow within one active session. It does not re
 
 The identity label and recipient association are demo behavior only. They do not provide production authentication, privacy, or multi-user data isolation.
 
-## Proposed Technical Direction (Tentative)
-Keep implementation to the smallest testable end-to-end workflow in one active session: trigger one simulated event for the fixed demo recipient, record its recipient association, timestamp, and test marker, then update recent arrivals without a manual refresh and show success only after recording succeeds. Keep failures visible. The workspace is fresh and has no existing application architecture or authentication to reuse. Choose the smallest suitable event-storage approach in the technical spec; this scope does not select a database. Durable storage across refreshes is optional unless the spec shows it is necessary and feasible before October 22, 2026. Use no external mail-detection or email service and add no unnecessary infrastructure.
+## Version 2 Direction (Resolved in the PRD and Spec)
+Version 2 uses plain HTML, CSS, and browser JavaScript with an in-memory store for one active session. The PRD defines the single-screen recipient journey; the technical spec resolves storage and confirms that refresh persistence and a database are unnecessary for this proof of concept. These implementation choices keep the approved scope to simulated recording, confirmation, and failure recovery. No external mail-detection or email service is part of the MVP.
 
 ## What the MVP Demonstrates and What Remains Unproven
 **Demonstrates:** the recipient can trigger a simulated arrival and receive an immediate, recipient-scoped in-app record and confirmation, including an honest failure state.
@@ -98,5 +104,5 @@ Keep implementation to the smallest testable end-to-end workflow in one active s
 - **Assumption:** one active session is sufficient for the demo; durable storage across page refreshes is not necessary to prove the required workflow.
 - **Risk:** the test identity can be mistaken for real authentication or privacy protection unless the interface labels it clearly.
 - **Risk:** simulated events can be mistaken for detected mail unless every event is visibly labeled as test/simulated.
-- **Risk:** choosing an event-storage approach or adding infrastructure beyond the workflow could threaten the October 22, 2026 target; the spec should keep the implementation minimal.
-- **Unresolved:** exact storage/persistence behavior and the UI details of triggering a simulated arrival belong in the technical spec and PRD, respectively.
+- **Risk addressed for Version 2:** extra storage or infrastructure could threaten the October 22, 2026 target; the approved spec keeps the implementation to an in-memory active-session store, while the PRD defines the recipient interaction.
+- **Resolved for Version 2:** the PRD defines the simulated-arrival screen and workflow, and the spec selects in-memory storage with no refresh persistence. Universal physical-mail detection remains a separate, open feasibility dependency above; it is outside this MVP.

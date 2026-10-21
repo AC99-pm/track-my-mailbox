@@ -115,7 +115,7 @@
       } catch (error) {
         status.dataset.state = "error";
         status.textContent = "We couldn’t record this simulated arrival. Please try again.";
-        if (buttonLabel) buttonLabel.textContent = originalButtonLabel;
+        if (buttonLabel) buttonLabel.textContent = "Try Again";
         busy = false;
         button.disabled = false;
         return;
@@ -124,7 +124,7 @@
       if (!accepted) {
         status.dataset.state = "error";
         status.textContent = "We couldn’t record this simulated arrival. Please try again.";
-        if (buttonLabel) buttonLabel.textContent = originalButtonLabel;
+        if (buttonLabel) buttonLabel.textContent = "Try Again";
         busy = false;
         button.disabled = false;
         return;

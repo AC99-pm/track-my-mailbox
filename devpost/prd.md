@@ -8,6 +8,8 @@ status: approved
 A focused proof of concept that helps a person in shared housing see a recipient-specific simulated mail-arrival event and an honest in-app confirmation.
 Source: `scope.md > The Unique Kernel`, `scope.md > Who It's For`.
 
+The public-facing project name is **Track My Mailbox**. This submission candidate is Version 2, **TMM_mvp**; the earlier TMM prototype is discontinued and is not part of this implementation. See `scope.md > Project Evolution` for the concise history.
+
 ## The Core Journey
 
 1. **Open the app.** The one demo recipient sees TMM's purpose, a clear test-only demo-identity label, an empty recent-arrivals state, and one primary action: **Simulate Test Arrival**. No arrival or success message appears before an event has been recorded.
@@ -72,7 +74,11 @@ If recording fails, show an understandable same-screen error, add no recent-arri
 - [ ] Duplicate submissions are prevented while an attempt is in progress.
 - [ ] The screen does not claim physical mail detection, actual email delivery, production authentication, or multi-user security.
 
-Source: `scope.md > The Core Loop`, `scope.md > What "Working" Looks Like`, `scope.md > Proposed Technical Direction (Tentative)`.
+### Verification Page (Test Only)
+
+The separate test page presents **Milestone 1 — Arrival Recording** for automatic checks and **Milestone 2 — Failure & Retry** for the optional interactive walkthrough. The walkthrough deliberately rejects the first two test writes and waits for the participant to confirm the third through a test-only control. These are presentation labels for verification; they do not rename the original implementation slices or establish that separate slice commits were made. Walkthrough controls do not appear in the recipient-facing app.
+
+Source: `scope.md > The Core Loop`, `scope.md > What "Working" Looks Like`, `scope.md > Version 2 Direction (Resolved in the PRD and Spec)`.
 
 ## States and Boundaries
 
@@ -111,6 +117,7 @@ One screen for one clearly labeled test-only demo recipient to trigger one simul
 ## Possible Later Enhancements
 
 - Investigate whether reliable real-mail detection is feasible, without assuming a particular API exists.
+- If the concept proceeds beyond the MVP, investigate persistent storage and recipient-specific notifications alongside appropriate authentication and privacy safeguards.
 - Reconsider email notifications, production authentication, or multi-user support only with a separate scope decision after the MVP.
 
 ## Non-Goals
@@ -123,6 +130,6 @@ One screen for one clearly labeled test-only demo recipient to trigger one simul
 
 ## Open Questions
 
-- **For `4-spec`:** What is the smallest suitable storage approach that accepts an event during the active session and allows the UI to reflect success only after that operation completes? Do not assume a database. Determine whether refresh persistence is necessary and feasible before the project target deadline of October 22, 2026; otherwise leave it out.
-- **For `4-spec`:** How should a failure from the chosen storage mechanism be surfaced to the same-screen retry flow without a false success?
-- **For review:** The supplied visual direction is proposed, not finalized brand identity. The learner can adjust it during this PRD review.
+- No unresolved product decision blocks the approved Version 2 MVP. The storage, persistence, and failure-display decisions were resolved in the approved technical spec.
+- Universal physical-mail detection remains an open future feasibility dependency documented in `scope.md`; it is not an MVP requirement or a capability demonstrated by this PRD.
+- The visual direction remains proposed guidance rather than a finalized brand identity.

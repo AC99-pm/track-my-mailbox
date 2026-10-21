@@ -3,32 +3,138 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>TMM — Slice 1 browser checks</title>
+    <title>TMM — Workflow verification</title>
     <link rel="stylesheet" href="../styles.css">
     <script src="../app.js" defer></script>
     <script src="test.js" defer></script>
+    <style>
+      .page-shell { width: min(100% - 2rem, 920px); padding-top: clamp(2rem, 7vh, 4rem); }
+      .page-header { max-width: 62ch; margin-bottom: 1.5rem; }
+      .page-header h1 { max-width: none; }
+      .milestones { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1rem; }
+      .milestone, .results-panel { padding: 1.2rem; }
+      .milestone-header { display: flex; align-items: flex-start; justify-content: space-between; gap: .8rem; margin-bottom: .75rem; }
+      .milestone h2 { font-size: 1.05rem; }
+      .milestone p:last-child { margin-bottom: 0; }
+      .mode-label { flex: 0 0 auto; padding: .25rem .5rem; border: 1px solid var(--line); border-radius: 999px; color: var(--blue-dark); background: var(--blue-pale); font-size: .68rem; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; }
+      .mode-label.test-only { border-color: var(--test-line); color: var(--test-ink); background: var(--test-bg); }
+      .walkthrough-link { display: inline-flex; align-items: center; min-height: 2.75rem; margin-top: .9rem; padding: .6rem .85rem; border-radius: 10px; color: #fff; background: var(--blue); font-weight: 700; text-decoration: none; }
+      .walkthrough-link:hover { background: var(--blue-dark); }
+      .walkthrough-link:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+      .timeout-note { margin-top: .7rem; color: var(--muted); font-size: .82rem; }
+      .secondary-action, .test-accept-action { min-height: 2.9rem; padding: .65rem .9rem; border: 1px solid #c7d0db; border-radius: 10px; color: #344054; background: #EEF2F6; font: inherit; font-weight: 700; cursor: pointer; transition: background .15s ease, transform .15s ease; }
+      .secondary-action:hover:not(:disabled), .test-accept-action:hover:not(:disabled) { background: #e3e9f0; }
+      .secondary-action:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+      .test-accept-action:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+      .secondary-action:active:not(:disabled), .test-accept-action:active:not(:disabled) { transform: translateY(1px); }
+      .test-accept-action:disabled, .secondary-action:disabled { border-color: #c7d0db; color: #475467; background: #D9E0E8; cursor: wait; }
+      .walkthrough-actions { display: flex; align-items: flex-start; gap: .75rem; flex-wrap: wrap; margin-top: .9rem; }
+      .walkthrough-actions .secondary-action, .walkthrough-actions .test-accept-action, .test-fixture .primary-action { min-height: 2.9rem; padding: .65rem .9rem; border-radius: 10px; font-size: .95rem; line-height: 1.25; text-align: center; white-space: normal; }
+      .test-fixture .primary-action.demo-complete { cursor: default; }
+      .test-fixture .primary-action.demo-complete::before { display: none; content: none; animation: none; }
+      .countdown { display: grid; gap: .4rem; margin-top: .8rem; }
+      .countdown[hidden], .countdown progress[hidden] { display: none; }
+      .countdown-copy { margin: 0; color: var(--blue-dark); font-size: .92rem; font-weight: 750; font-variant-numeric: tabular-nums; }
+      .countdown[data-state="timeout"] .countdown-copy { color: var(--error-ink); }
+      .countdown progress { width: min(100%, 19rem); height: .45rem; accent-color: var(--blue); }
+      .controlled-acceptance { display: grid; min-width: min(100%, 14rem); gap: .45rem; }
+      .controlled-acceptance[hidden] { display: none; }
+      .test-control-note { max-width: 46ch; margin: 0; color: var(--muted); font-size: .82rem; line-height: 1.45; }
+      .walkthrough-stepper { --step-gap: 2.5rem; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: var(--step-gap); padding: 0; margin: .9rem 0 1.1rem; list-style: none; }
+      .walkthrough-step { position: relative; display: flex; min-width: 0; align-items: center; gap: .55rem; padding: .7rem .75rem; border: 1px solid var(--line); border-radius: 11px; color: var(--muted); background: #f8fafb; font-size: .82rem; font-weight: 700; line-height: 1.3; }
+      .walkthrough-step:not(:last-child)::after { position: absolute; top: 50%; right: calc(-1 * var(--step-gap) / 2 - .5rem); width: 1rem; content: "→"; color: var(--muted); font-size: 1rem; line-height: 1; text-align: center; transform: translateY(-50%); }
+      .step-number { display: grid; width: 1.55rem; height: 1.55rem; flex: 0 0 auto; place-items: center; border: 1px solid currentColor; border-radius: 50%; font-size: .72rem; }
+      .walkthrough-step[data-step-state="complete"] { border-color: var(--success-line); color: var(--success-ink); background: var(--success-bg); }
+      .walkthrough-step[data-step-state="complete"] .step-number { border-color: var(--success-ink); }
+      .walkthrough-step[data-step-state="current"] { border-color: #9bb9cc; color: var(--blue-dark); background: var(--blue-pale); box-shadow: 0 0 0 2px rgb(49 95 128 / 9%); }
+      .walkthrough-step[data-step-state="upcoming"] { color: var(--muted); background: #f8fafb; }
+      .walkthrough-step[data-step-state="paused"] { border-color: var(--test-line); color: var(--test-ink); background: var(--test-bg); }
+      .walkthrough-step[data-step-state="failed"] { border-color: var(--error-line); color: var(--error-ink); background: var(--error-bg); }
+      .step-status { margin: 0 0 .25rem; color: var(--blue); font-size: .74rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+      .walkthrough-prompt { margin-bottom: 0; font-size: 1rem; font-weight: 650; }
+      .walkthrough-prompt[data-state="error"], .walkthrough-prompt[data-state="timeout"] { color: var(--error-ink); }
+      .walkthrough-prompt[data-state="complete"] { color: var(--success-ink); }
+      .results-panel h3 { margin-bottom: .8rem; }
+      .results-panel .arrival-list { gap: .55rem; }
+      .results-panel .arrival-row { display: block; padding: .7rem .85rem; border: 1px solid var(--success-line); border-left: 4px solid var(--success-ink); border-radius: 9px; background: #f6fbf7; font-size: .9rem; }
+      .results-panel .arrival-row.test-failure { border-color: var(--error-line); border-left-color: var(--error-ink); background: var(--error-bg); }
+      .walkthrough-region[hidden] { display: none; }
+      .walkthrough-region { display: grid; gap: 1rem; margin-top: 1rem; }
+      .walkthrough-status, .preview-panel { padding: 1.2rem; }
+      .walkthrough-progress-panel { padding: 1.1rem 1.2rem; }
+      .walkthrough-progress-panel h3 { margin-bottom: .55rem; }
+      .walkthrough-progress-status { margin: 0; padding: .55rem .7rem; border: 1px solid var(--line); border-radius: 9px; color: var(--ink); background: #f3f5f7; font-weight: 700; }
+      .walkthrough-progress-status[data-state="passed"] { border-color: var(--success-line); color: var(--success-ink); background: var(--success-bg); }
+      .walkthrough-progress-status[data-state="failed"] { border-color: var(--error-line); color: var(--error-ink); background: var(--error-bg); }
+      .preview-panel h3 { margin-bottom: .75rem; }
+      .preview-panel [data-fixture] .identity { display: none; }
+      .preview-note { margin-bottom: 1rem; color: var(--muted); font-size: .9rem; }
+      .walkthrough-controls a { display: inline-block; margin-top: .8rem; color: #174f75; text-underline-offset: .18em; }
+      .walkthrough-controls a:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+      .test-fixture { margin-top: .5rem; }
+      @media (max-width: 680px) {
+        .milestones { grid-template-columns: 1fr; }
+        .milestone-header { flex-wrap: wrap; }
+        .walkthrough-stepper { --step-gap: 1.5rem; grid-template-columns: 1fr; row-gap: var(--step-gap); }
+        .walkthrough-step:not(:last-child)::after { top: auto; right: auto; bottom: calc(-1 * var(--step-gap) / 2 - .5rem); left: 50%; width: 1rem; height: 1rem; content: "↓"; transform: translateX(-50%); }
+      }
+    </style>
   </head>
   <body>
     <main class="page-shell">
       <header class="page-header">
         <p class="eyebrow">Build verification</p>
-        <h1>Slice 1 workflow checks</h1>
-        <p class="purpose">Local browser checks for accepted simulated arrivals and store-before-display ordering.</p>
-        <p class="purpose">To observe the test-only failure and retry states, open this page with <code>?walkthrough=failure-retry</code>. The normal harness run remains automatic.</p>
+        <h1>Verify the arrival workflow</h1>
+        <p class="purpose">See how a simulated arrival appears after it is confirmed, and how to try again if the first attempt fails. This demo does not detect real mail.</p>
       </header>
-      <section aria-label="Test results" class="arrivals">
-        <h2>Results</h2>
-        <ul class="arrival-list" data-results></ul>
-      </section>
-      <section aria-label="Workflow test fixture" class="test-fixture" data-fixture hidden>
-        <div class="identity"><div><p class="identity-label">Current demo recipient</p><p class="identity-name">Test-only demo recipient</p></div><span class="test-badge">TEST ONLY</span></div>
-        <section class="arrivals" aria-labelledby="fixture-heading">
-          <h2 id="fixture-heading">Recent arrivals</h2>
-          <ul class="arrival-list" data-arrivals><li class="empty-state" data-empty>No simulated arrivals yet</li></ul>
+      <div class="milestones">
+        <section class="arrivals milestone" aria-labelledby="arrival-milestone">
+          <div class="milestone-header">
+            <h2 id="arrival-milestone">Milestone 1 — Arrival Recording</h2>
+            <span class="mode-label test-only">Automatic verification · Test only</span>
+          </div>
+          <p class="purpose">Simulated arrivals appear in Recent arrivals only after they are confirmed.</p>
+          <section aria-label="Automatic verification results" class="arrivals results-panel">
+            <h3>Automatic verification results</h3>
+            <p class="purpose">The checks start automatically. The results below show what passed or needs another look.</p>
+            <ul class="arrival-list" data-results></ul>
+          </section>
         </section>
-        <button class="primary-action" type="button" data-simulate>Simulate Test Arrival</button>
-        <p class="status" data-status role="status" aria-live="polite"></p>
-      </section>
+        <section class="arrivals milestone" aria-labelledby="recovery-milestone">
+          <div class="milestone-header">
+            <h2 id="recovery-milestone">Milestone 2 — Failure &amp; Retry</h2>
+            <span class="mode-label test-only">Interactive walkthrough · Test only</span>
+          </div>
+          <p class="purpose">See two intentionally rejected attempts followed by a confirmed third attempt.</p>
+          <a class="walkthrough-link" href="?walkthrough=failure-retry">Start demo</a>
+          <p class="timeout-note">Each required action has a 30-second countdown. Choose <strong>Start over</strong> to begin again.</p>
+          <section class="walkthrough-region" data-walkthrough hidden aria-label="Interactive failure and retry walkthrough">
+            <div class="walkthrough-controls" data-walkthrough-panel></div>
+            <section class="arrivals walkthrough-progress-panel" aria-labelledby="walkthrough-progress-heading">
+              <h3 id="walkthrough-progress-heading">Walkthrough progress</h3>
+              <p class="walkthrough-progress-status" data-walkthrough-status data-state="not-started" role="status" aria-live="polite">Not started</p>
+            </section>
+            <section class="arrivals preview-panel" aria-labelledby="preview-heading">
+              <div class="milestone-header">
+                <h3 id="preview-heading">Recipient preview</h3>
+                <span class="mode-label test-only">Simulated demo</span>
+              </div>
+              <p class="preview-note">See what the demo recipient sees when an arrival is recorded.</p>
+              <div data-fixture-host>
+                <section aria-label="Workflow test fixture" class="test-fixture" data-fixture hidden>
+                  <div class="identity"><div><p class="identity-label">Current demo recipient</p><p class="identity-name">Test-only demo recipient</p></div><span class="test-badge">TEST ONLY</span></div>
+                  <section class="arrivals" aria-labelledby="fixture-heading">
+                    <h4 id="fixture-heading">Recent arrivals</h4>
+                    <ul class="arrival-list" data-arrivals><li class="empty-state" data-empty>No simulated arrivals yet</li></ul>
+                  </section>
+                  <button class="primary-action" type="button" data-simulate><span>Simulate Test Arrival</span></button>
+                  <p class="status" data-status role="status" aria-live="polite"></p>
+                </section>
+              </div>
+            </section>
+          </section>
+        </section>
+      </div>
     </main>
   </body>
 </html>
